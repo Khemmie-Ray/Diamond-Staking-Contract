@@ -1,33 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC20AppStorage} from "../libraries/AppStorage.sol";
+import {RewardTokenStorage} from "../libraries/AppStorage.sol";
 import "../interfaces/IERC20.sol";
 
-contract ERC20Facet is IERC20 {
-    ERC20AppStorage internal s;
+contract RewardTokenFacet is IERC20 {
+    RewardTokenStorage internal r;
 
     function name() external view returns(string memory) {
-        return s._name;
+        return r._name;
     }
 
     function symbol() external view returns (string memory) {
-        return s._symmbol;
+        return r._symmbol;
     }
 
     function decimals() external view returns(uint) {
-        return s._decimal;
+        return r._decimal;
     }
 
      function totalSupply() external view override returns(uint256) {
-        return s._totalSupply;
+        return r._totalSupply;
     }
 
      function balanceOf(address account) external view override returns(uint256) {
-        return s._balances[account];
+        return r._balances[account];
     }
 
-    function transfer(address to, uint256 amount) internal overrides returns (bool) {
+    function transfer(address to, uint256 amount) external overrides returns (bool) {
         address owner = msg.sender;
         _transfer(owner, to, amount);
         return true;
@@ -35,11 +35,11 @@ contract ERC20Facet is IERC20 {
     }
 
     function allowance(address owner, address spender) external view returns (uint256) {
-        return s.allowance[owner][spender];
+        return r.allowance[owner][spender];
     }
 
     function approve(address _owner, address spender, uint256 amount) external overrides returns (bool) {
-        address owner = msg.sender;
+        address _owner =msg.sender;
         _approve(owner, sender, amount);
         return true;    
     }
@@ -48,7 +48,7 @@ contract ERC20Facet is IERC20 {
         require(owner != address(0), "Zero address invalid");
         require(spender != address(0), "Zero address invalid");
 
-        s._allowances[owner][spender] = amount;
+        r._allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
@@ -57,11 +57,11 @@ contract ERC20Facet is IERC20 {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        uint256 accountBalance = s._balances[account];
+        uint256 accountBalance = r._balances[account];
         require(accountBalance >= amount, "Burn amount exceeds balance");
         unchecked {
-            s._balances[account] = accountBalance - amount;
-            s._totalSupply -= amount;
+            r._balances[account] = accountBalance - amount;
+            r._totalSupply -= amount;
         }
 
         emit Transfer(account, address(0), amount);
@@ -74,9 +74,9 @@ contract ERC20Facet is IERC20 {
 
         _beforeTokenTransfer(address(0), account, amount);
 
-        s._totalSupply += amount;
+        r._totalSupply += amount;
         unchecked {
-            s._balances[account] += amount;
+            r._balances[account] += amount;
         }
         emit Transfer(address(0), account, amount);
 
@@ -100,8 +100,8 @@ contract ERC20Facet is IERC20 {
         uint256 fromBalance = s._balances[from];
         require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
         unchecked {
-            s._balances[from] = fromBalance - amount;
-            s._balances[to] += amount;
+            r._balances[from] = fromBalance - amount;
+            r._balances[to] += amount;
         }
 
         emit Transfer(from, to, amount);
